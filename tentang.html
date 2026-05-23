@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tentang — StresLens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+<div class="container">
+
+  <div id="streslens-header"></div>
+
+  <div style="margin-top:32px;"></div>
+
+  <div class="article">
+
+    <h2>Tentang StresLens</h2>
+    <p class="lead">Sistem pakar untuk memprediksi tingkat beban dan stres mahasiswa S1 berdasarkan kombinasi faktor akademik, fisik, dan aktivitas non-akademik — menggunakan logika fuzzy untuk merepresentasikan ambiguitas dan interaksi non-linear antar-faktor.</p>
+
+    <h3>Masalah yang dijawab</h3>
+    <p>Mahasiswa cenderung tidak menyadari bahwa beban mereka sudah melampaui kapasitas sampai gejala fisik dan psikis muncul. Kesadaran yang terlambat menyebabkan intervensi (istirahat, restrukturisasi prioritas, konsultasi konselor) baru dilakukan setelah kondisi memburuk. StresLens memberikan <strong>peringatan dini berbasis self-input</strong>, memungkinkan refleksi sebelum titik kewalahan tercapai.</p>
+
+    <h3>Mengapa Fuzzy Logic, bukan if-else?</h3>
+    <p>Tiga alasan teknis menjustifikasi pemilihan fuzzy:</p>
+    <ul>
+      <li><strong>Variabel linguistik ambigu.</strong> "Kurang tidur" atau "tugas banyak" tidak punya batas tegas. Crisp logic memaksa threshold buatan (misal: kurang = &lt;6 jam) yang tidak mengakomodasi variasi personal.</li>
+      <li><strong>Interaksi non-linear.</strong> Tugas banyak + tidur cukup ≠ tugas banyak + tidur kurang. Efek kombinasinya tidak proporsional dan butuh inference engine yang merepresentasikan reasoning seperti konselor.</li>
+      <li><strong>Gradasi keparahan.</strong> "Sedikit kewalahan" vs "sangat kewalahan" lebih sesuai dengan realitas psikologis ketimbang biner kewalahan/tidak.</li>
+    </ul>
+
+    <h3>Arsitektur Sistem</h3>
+    <p>StresLens menggunakan <strong>Mamdani Fuzzy Inference System</strong> dengan komponen:</p>
+    <ul>
+      <li><strong>7 variabel input</strong> dibagi menjadi 3 kategori (akademik, fisik, non-akademik), masing-masing dengan 3 himpunan fuzzy (rendah/sedang/tinggi atau sedikit/sedang/banyak).</li>
+      <li><strong>1 variabel output</strong> (tingkat stres) dengan 4 himpunan: rendah, sedang, tinggi, kritis.</li>
+      <li><strong>35 aturan IF-THEN</strong> dibagi 6 kategori: Akademik, Fisik, Non-Akademik, Compound (cross-domain), Positif (kompensasi), Baseline (single-variable coverage).</li>
+      <li><strong>Operator agregasi:</strong> AND = MIN (T-norm), OR = MAX (S-norm), agregasi output = MAX clipping.</li>
+      <li><strong>Defuzzifikasi centroid</strong> pada domain output [0, 100] dengan 200 sampel.</li>
+      <li><strong>Forward chaining</strong> untuk menghasilkan rekomendasi intervensi kontekstual berdasarkan kombinasi input dan skor output.</li>
+    </ul>
+
+    <h3>Analisis PEAS</h3>
+    <table style="margin-top: 12px;">
+      <thead>
+        <tr><th>Komponen</th><th>Deskripsi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Performance</strong></td><td>Akurasi klasifikasi tingkat stres yang sesuai dengan self-assessment mahasiswa; relevansi rekomendasi terhadap faktor dominan; sensitivitas terhadap perubahan kondisi (monotonicity).</td></tr>
+        <tr><td><strong>Environment</strong></td><td>Mahasiswa S1 aktif, terutama prodi sains/teknik dengan beban praktikum. Lingkungan input bersifat statis (snapshot kondisi saat ini), tidak terhubung dengan sistem akademik otomatis.</td></tr>
+        <tr><td><strong>Actuators</strong></td><td>Output skor stres (0–100), label kategori, faktor kontributor dominan, dan rekomendasi intervensi tekstual. Tidak ada actuator fisik.</td></tr>
+        <tr><td><strong>Sensors</strong></td><td>Self-report mahasiswa via UI slider untuk 7 variabel input. Bersifat subjektif, dan akurasi sistem bergantung pada kejujuran input.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Sumber Pengetahuan</h3>
+    <p>Basis aturan dirumuskan dari kombinasi:</p>
+    <ul>
+      <li>Literatur skala stres akademik standar (PSS-10 Perceived Stress Scale, Academic Stress Scale)</li>
+      <li>Wawancara terbatas dengan teman sejawat lintas fakultas</li>
+      <li>Konsultasi dengan literatur unit konseling mahasiswa (Gadjah Mada Medical Center)</li>
+      <li>Pengetahuan domain dari pengalaman langsung peneliti sebagai mahasiswa prodi dengan beban praktikum tinggi</li>
+    </ul>
+
+    <h3>Batasan</h3>
+    <ul>
+      <li>Sistem ini adalah alat <strong>self-awareness indikatif</strong>, bukan diagnosis klinis. Tidak dapat menggantikan psikolog atau konselor.</li>
+      <li>Input bersifat subjektif (self-report); akurasi hasil bergantung pada kejujuran pengguna.</li>
+      <li>Tidak terintegrasi dengan sistem akademik (Simaster, Elok); semua input dimasukkan manual.</li>
+      <li>Basis aturan dirancang berdasarkan konteks mahasiswa Indonesia, khususnya UGM; mungkin perlu adjustment untuk konteks lain.</li>
+      <li>Tidak menyimpan riwayat: setiap sesi independen.</li>
+    </ul>
+
+    <h3>Cara Penggunaan</h3>
+    <ol style="padding-left: 20px;">
+      <li style="font-size:15px; line-height:1.65; color:var(--ink-soft); margin-bottom:8px;">Buka halaman <a href="../index.html" style="color:var(--accent-deep);">Diagnostik</a> dan isi 7 variabel input sesuai kondisi Anda saat ini.</li>
+      <li style="font-size:15px; line-height:1.65; color:var(--ink-soft); margin-bottom:8px;">Sistem secara real-time menampilkan skor stres, level, faktor dominan, dan rekomendasi.</li>
+      <li style="font-size:15px; line-height:1.65; color:var(--ink-soft); margin-bottom:8px;">Telusuri <a href="visualisasi.html" style="color:var(--accent-deep);">Visualisasi</a> untuk memahami posisi input Anda pada fungsi keanggotaan tiap himpunan fuzzy.</li>
+      <li style="font-size:15px; line-height:1.65; color:var(--ink-soft); margin-bottom:8px;">Buka <a href="trace.html" style="color:var(--accent-deep);">Rule Trace</a> untuk melihat aturan-aturan yang ter-fire dan bagaimana skor terbentuk.</li>
+      <li style="font-size:15px; line-height:1.65; color:var(--ink-soft);">Jika skor Anda di zona TINGGI atau KRITIS berkelanjutan, jadwalkan konsultasi dengan Gadjah Mada Medical Center (GMC) atau unit konseling fakultas.</li>
+    </ol>
+
+    <h3>Project Akhir</h3>
+    <p>Sistem ini dibangun sebagai project akhir mata kuliah <strong>Kecerdasan Artifisial</strong>, S1 Elektronika dan Instrumentasi, FMIPA Universitas Gadjah Mada, semester genap 2025/2026.</p>
+
+    <p style="margin-top: 24px; padding: 16px; background: var(--paper-deep); border-left: 3px solid var(--accent); font-size: 13.5px; color: var(--ink); line-height: 1.6;"><strong>Penafian.</strong> StresLens tidak menyimpan atau mengirim data Anda. Semua perhitungan dilakukan lokal di browser. Tidak ada server backend, tidak ada analytics, tidak ada tracking.</p>
+
+  </div>
+
+  <div id="streslens-footer"></div>
+</div>
+
+<script src="../js/layout.js"></script>
+<script>
+  StresLayout.injectLayout('pages/tentang.html');
+</script>
+</body>
+</html>

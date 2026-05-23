@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StresLens — Diagnostik Beban & Stres Mahasiswa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<div class="container">
+
+  <div id="streslens-header"></div>
+
+  <!-- INTRO -->
+  <section class="intro" style="margin-top:32px;">
+    <div class="deck">
+      Mahasiswa jarang sadar bebannya berlebih sampai gejala muncul. <em>StresLens</em> membaca kombinasi faktor akademik, fisik, dan organisasi untuk memprediksi tingkat stres — sebelum kewalahan menjadi <em>burnout</em>.
+    </div>
+    <div class="byline">
+      <div><strong>Project Akhir Kecerdasan Artifisial</strong></div>
+      <div>S1 Elektronika dan Instrumentasi</div>
+      <div>FMIPA Universitas Gadjah Mada</div>
+      <div class="accent">Metode: Mamdani FIS + Forward Chaining</div>
+    </div>
+  </section>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- LEFT: INPUT -->
+    <section class="input-column">
+
+      <!-- Akademik -->
+      <div class="input-block">
+        <div class="section-label">
+          <span>I. Faktor Akademik</span>
+          <span class="num">01 — 03</span>
+        </div>
+        <h3>Tuntutan kuliah dan tugas</h3>
+
+        <div class="field">
+          <div class="field-row">
+            <span class="field-label">Jumlah tugas aktif belum selesai</span>
+            <span class="field-value" id="v-tugas">3 tugas</span>
+          </div>
+          <input type="range" id="i-tugas" min="0" max="12" step="1" value="3">
+          <div class="field-hint">0 (lengang) — 12 (sangat banyak)</div>
+        </div>
+
+        <div class="field">
+          <div class="field-row">
+            <span class="field-label">Jarak deadline terdekat</span>
+            <span class="field-value" id="v-deadline">5 hari</span>
+          </div>
+          <input type="range" id="i-deadline" min="0" max="14" step="1" value="5">
+          <div class="field-hint">0 hari (hari ini) — 14 hari (jauh)</div>
+        </div>
+
+        <div class="field">
+          <div class="field-row">
+            <span class="field-label">Persentase kemajuan tugas terdekat</span>
+            <span class="field-value" id="v-progress">40%</span>
+          </div>
+          <input type="range" id="i-progress" min="0" max="100" step="5" value="40">
+          <div class="field-hint">0% (belum mulai) — 100% (selesai)</div>
+        </div>
+      </div>
+
+      <!-- Fisik -->
+      <div class="input-block">
+        <div class="section-label">
+          <span>II. Faktor Fisik</span>
+          <span class="num">04 — 05</span>
+        </div>
+        <h3>Kondisi tubuh dan recovery</h3>
+
+        <div class="field">
+          <div class="field-row">
+            <span class="field-label">Rata-rata jam tidur 3 hari terakhir</span>
+            <span class="field-value" id="v-tidur">6 jam</span>
+          </div>
+          <input type="range" id="i-tidur" min="2" max="10" step="0.5" value="6">
+          <div class="field-hint">2 jam (sangat kurang) — 10 jam (lebih dari cukup)</div>
+        </div>
+
+        <div class="field">
+          <div class="field-row">
+            <span class="field-label">Tingkat kelelahan saat ini (self-report)</span>
+            <span class="field-value" id="v-lelah">5 / 10</span>
+          </div>
+          <input type="range" id="i-lelah" min="1" max="10" step="1" value="5">
+          <div class="field-hint">1 (segar) — 10 (sangat lelah)</div>
+        </div>
+      </div>
+
+      <!-- Non-Akademik -->
+      <div class="input-block">
+        <div class="section-label">
+          <span>III. Aktivitas Non-Akademik</span>
+          <span class="num">06 — 07</span>
+        </div>
+        <h3>Organisasi dan kegiatan luar kuliah</h3>
+
+        <div class="field">
+          <div class="field-row">
+            <span class="field-label">Jumlah organisasi / kepanitiaan aktif</span>
+            <span class="field-value" id="v-org">2 organisasi</span>
+          </div>
+          <input type="range" id="i-org" min="0" max="6" step="1" value="2">
+          <div class="field-hint">0 — 6 keterlibatan aktif</div>
+        </div>
+
+        <div class="field">
+          <div class="field-row">
+            <span class="field-label">Jam non-akademik per minggu</span>
+            <span class="field-value" id="v-jamnon">10 jam</span>
+          </div>
+          <input type="range" id="i-jamnon" min="0" max="40" step="1" value="10">
+          <div class="field-hint">0 jam — 40+ jam (sangat tinggi)</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button id="btn-reset" class="secondary">Reset</button>
+        <button id="btn-preset-krisis">Skenario Krisis</button>
+        <button id="btn-preset-sehat" class="secondary">Skenario Sehat</button>
+      </div>
+
+      <div style="margin-top:32px; padding-top:20px; border-top:1px solid var(--rule); font-size:13px; color:var(--ink-soft); line-height:1.6;">
+        Lihat <a href="pages/visualisasi.html" style="color:var(--accent-deep); font-weight:500;">visualisasi fungsi keanggotaan</a>,
+        <a href="pages/rules.html" style="color:var(--accent-deep); font-weight:500;">35 aturan basis pengetahuan</a>,
+        atau <a href="pages/trace.html" style="color:var(--accent-deep); font-weight:500;">rule firing trace</a> untuk melihat proses inferensi dari input saat ini.
+      </div>
+    </section>
+
+    <!-- RIGHT: OUTPUT -->
+    <section class="output-panel">
+
+      <div class="section-label">
+        <span>Hasil Inferensi</span>
+        <span class="num">Output</span>
+      </div>
+
+      <div class="verdict" id="verdict" data-level="sedang">
+        <div class="v-label">Tingkat Beban &amp; Stres</div>
+        <div class="v-level" id="v-leveltext">Sedang</div>
+        <div class="v-score">Skor crisp: <strong id="v-scorenum">52.4</strong> / 100 &middot; defuzzifikasi centroid</div>
+        <div class="v-bar"><div class="v-bar-fill" id="v-barfill"></div></div>
+        <div class="v-bar-marks">
+          <span>0 Rendah</span>
+          <span>28</span>
+          <span>52</span>
+          <span>75</span>
+          <span>100 Kritis</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <div class="section-label">
+          <span>Kontribusi Faktor Dominan</span>
+          <span class="num">α-cut</span>
+        </div>
+        <div id="factors-list"></div>
+      </div>
+
+      <div class="recs">
+        <div class="section-label">
+          <span>Rekomendasi Intervensi</span>
+          <span class="num">Forward Chaining</span>
+        </div>
+        <h3>Tindakan yang disarankan</h3>
+        <div id="recs-list"></div>
+      </div>
+
+    </section>
+  </div>
+
+  <div id="streslens-footer"></div>
+</div>
+
+<script src="js/fis-engine.js"></script>
+<script src="js/state.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/layout.js"></script>
+<script>
+  // Inject layout
+  StresLayout.injectLayout('index.html');
+
+  // Load state and apply to inputs
+  let inputs = StresState.load();
+  StresUI.setInputsToDOM(inputs);
+
+  function update() {
+    inputs = StresUI.getInputsFromDOM();
+    StresState.save(inputs);
+
+    // Update slider value labels
+    Object.keys(StresUI.INPUT_META).forEach(function (k) {
+      const valEl = document.getElementById(StresUI.INPUT_META[k].valId);
+      if (valEl) valEl.textContent = StresUI.INPUT_META[k].fmt(inputs[k]);
+    });
+    StresUI.refreshAllSliderFills();
+
+    const result = FIS.infer(inputs);
+    const contrib = FIS.factorContributions(result.fired);
+    const recs = FIS.generateRecommendations(inputs, result);
+
+    StresUI.renderVerdict(result);
+    StresUI.renderFactors('factors-list', contrib);
+    StresUI.renderRecommendations('recs-list', recs);
+  }
+
+  // Bind sliders
+  Object.keys(StresUI.INPUT_META).forEach(function (k) {
+    const el = document.getElementById(StresUI.INPUT_META[k].id);
+    if (el) el.addEventListener('input', update);
+  });
+
+  document.getElementById('btn-reset').addEventListener('click', function () {
+    const p = StresState.preset('default');
+    StresUI.setInputsToDOM(p);
+    update();
+  });
+  document.getElementById('btn-preset-krisis').addEventListener('click', function () {
+    const p = StresState.preset('krisis');
+    StresUI.setInputsToDOM(p);
+    update();
+  });
+  document.getElementById('btn-preset-sehat').addEventListener('click', function () {
+    const p = StresState.preset('sehat');
+    StresUI.setInputsToDOM(p);
+    update();
+  });
+
+  // Initial render
+  update();
+</script>
+</body>
+</html>
