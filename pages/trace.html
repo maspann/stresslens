@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rule Trace — StresLens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/main.css">
+<style>
+  .trace-card {
+    border: 1px solid var(--rule);
+    background: var(--paper-deep);
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .trace-card.fired {
+    background: rgba(184, 64, 31, 0.05);
+    border-left: 3px solid var(--accent);
+  }
+  .trace-card.fired.strong {
+    background: rgba(184, 64, 31, 0.10);
+    border-left-width: 4px;
+  }
+  .trace-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .trace-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-mute);
+    letter-spacing: 0.05em;
+  }
+  .trace-alpha {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-deep);
+  }
+  .trace-alpha.zero { color: var(--ink-mute); font-weight: 400; }
+  .trace-alpha-bar {
+    height: 4px;
+    background: var(--paper);
+    overflow: hidden;
+    border-radius: 1px;
+    margin-top: 8px;
+  }
+  .trace-alpha-bar .fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.5s;
+  }
+  .trace-text {
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .trace-text code {
+    background: var(--paper);
+    padding: 1px 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .trace-mems {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+  .trace-mems strong { color: var(--ink); }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .stat-box {
+    border-top: 3px solid var(--ink);
+    padding: 14px 16px;
+    background: var(--paper-deep);
+  }
+  .stat-box.accent { border-top-color: var(--accent); }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 28px;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+  .stat-box.accent .stat-value { color: var(--accent-deep); }
+  @media (max-width: 768px) {
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div id="streslens-header"></div>
+
+  <div style="margin-top:32px;"></div>
+  <div id="input-summary" class="input-summary"></div>
+
+  <div class="article" style="max-width: 900px;">
+    <h2>Rule Firing Trace</h2>
+    <p class="lead">Halaman ini menunjukkan setiap aturan yang ter-fire untuk input saat ini, beserta <em>firing strength</em> α dan derajat keanggotaan tiap antecedent. Ini adalah "jejak penalaran" sistem pakar — transparansi penuh dari proses inferensi.</p>
+  </div>
+
+  <div style="max-width: 900px; margin: 0 auto;">
+
+    <div class="stat-grid">
+      <div class="stat-box accent">
+        <div class="stat-label">Aktif</div>
+        <div class="stat-value" id="stat-fired">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Total Rules</div>
+        <div class="stat-value" id="stat-total">35</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">α Max</div>
+        <div class="stat-value" id="stat-alphamax">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Skor Output</div>
+        <div class="stat-value" id="stat-score">—</div>
+      </div>
+    </div>
+
+    <div class="section-label">
+      <span>Filter Tampilan</span>
+      <span class="num">Sort: α desc</span>
+    </div>
+    <div class="mf-tabs" style="margin-bottom: 20px;">
+      <button class="mf-tab active" data-show="fired">Hanya yang Fire</button>
+      <button class="mf-tab" data-show="all">Semua Rules</button>
+    </div>
+
+    <div id="trace-container"></div>
+
+  </div>
+
+  <div id="streslens-footer"></div>
+</div>
+
+<script src="../js/fis-engine.js"></script>
+<script src="../js/state.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/layout.js"></script>
+<script>
+  StresLayout.injectLayout('pages/trace.html');
+
+  const inputs = StresState.load();
+  const result = FIS.infer(inputs);
+  StresUI.renderInputSummary('input-summary', inputs, result);
+
+  // Stats
+  const firedCount = result.fired.filter(function (f) { return f.alpha > 0.01; }).length;
+  const alphaMax = Math.max.apply(null, result.fired.map(function (f) { return f.alpha; }));
+  document.getElementById('stat-fired').textContent = firedCount;
+  document.getElementById('stat-alphamax').textContent = alphaMax.toFixed(2);
+  document.getElementById('stat-score').textContent = result.crisp.toFixed(1);
+
+  let showAll = false;
+
+  function renderTrace() {
+    const sorted = result.fired.slice().sort(function (a, b) { return b.alpha - a.alpha; });
+    const filtered = showAll ? sorted : sorted.filter(function (f) { return f.alpha > 0.01; });
+
+    if (filtered.length === 0) {
+      document.getElementById('trace-container').innerHTML =
+        '<div style="padding: 40px; text-align: center; color: var(--ink-mute); font-style: italic;">Tidak ada rule yang ter-fire dengan α &gt; 0.01 untuk input saat ini.</div>';
+      return;
+    }
+
+    const html = filtered.map(function (f) {
+      const isFired = f.alpha > 0.01;
+      const isStrong = f.alpha > 0.5;
+      const memsText = f.rule.ant.map(function (pair, i) {
+        const m = f.memberships[i];
+        return 'μ(<code>' + pair[0] + '=' + pair[1] + '</code>) = <strong>' + m.toFixed(3) + '</strong>';
+      }).join(' &nbsp;·&nbsp; ');
+
+      const antText = f.rule.ant.map(function (pair) {
+        return '<code>' + pair[0] + '</code> <em>' + pair[1] + '</em>';
+      }).join(' <strong style="color:var(--ink-mute);">' + (f.rule.op === 'OR' ? '∨' : '∧') + '</strong> ');
+
+      return '<div class="trace-card ' + (isFired ? 'fired' : '') + (isStrong ? ' strong' : '') + '">' +
+        '<div class="trace-head">' +
+          '<span class="trace-id">RULE R' + f.rule.id.toString().padStart(2, '0') + ' &middot; ' + f.rule.category + '</span>' +
+          '<span class="trace-alpha ' + (isFired ? '' : 'zero') + '">α = ' + f.alpha.toFixed(3) + '</span>' +
+        '</div>' +
+        '<div class="trace-text">' +
+          '<span style="color:var(--ink-mute); letter-spacing:0.05em;">IF</span> ' + antText +
+          ' <span style="color:var(--ink-mute); letter-spacing:0.05em;">THEN</span> stres = <em class="cons-' + f.rule.cons + '" style="font-weight:500;">' + f.rule.cons.toUpperCase() + '</em>' +
+        '</div>' +
+        '<div class="trace-mems">' + memsText + '</div>' +
+        '<div class="trace-alpha-bar"><div class="fill" style="width:' + (f.alpha * 100).toFixed(1) + '%"></div></div>' +
+      '</div>';
+    }).join('');
+
+    document.getElementById('trace-container').innerHTML = html;
+  }
+
+  document.querySelectorAll('.mf-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.mf-tab').forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      showAll = tab.dataset.show === 'all';
+      renderTrace();
+    });
+  });
+
+  renderTrace();
+</script>
+</body>
+</html>
